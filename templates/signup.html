@@ -3,21 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JaMoveo Signup</title>
+    <title>Sign Up</title>
+    <style>
+        .success { color: green; }
+        .error { color: red; }
+        .hidden { display: none; }
+    </style>
+    <script>
+        function updateForm() {
+            var role = document.getElementById('role').value;
+            var instrumentField = document.getElementById('instrument-field');
+            var instrumentSelect = document.getElementById('instrument');
+
+            if (role === 'instrument_player') {
+                instrumentField.classList.remove('hidden');
+            } else {
+                instrumentField.classList.add('hidden');
+                instrumentSelect.value = ''; // Clear the selection if role is not 'instrument_player'
+            }
+        }
+    </script>
 </head>
 <body>
-    <h1>Sign Up for JaMoveo</h1>
-    <form action="{{ url_for('register') }}" method="post">
+    <h1>Sign Up</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul>
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <form action="{{ url_for('signup') }}" method="post">
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" required><br><br>
-
+        
         <label for="password">Password:</label>
         <input type="password" id="password" name="password" required><br><br>
-
-        <label for="instrument">Instrument:</label>
-        <input type="text" id="instrument" name="instrument" required><br><br>
-
+        
+        <label for="role">Role:</label>
+        <select id="role" name="role" onchange="updateForm()" required>
+            <option value="">Select Role</option>
+            <option value="instrument_player">Instrument Player</option>
+            <option value="singer">Singer</option>
+        </select><br><br>
+        
+        <div id="instrument-field" class="hidden">
+            <label for="instrument">Instrument:</label>
+            <select id="instrument" name="instrument">
+                <option value="">Select Instrument</option>
+                <option value="drums">Drums</option>
+                <option value="guitars">Guitars</option>
+                <option value="bass">Bass</option>
+                <option value="saxophone">Saxophone</option>
+                <option value="keyboards">Keyboards</option>
+                <option value="vocals">Vocals</option>
+            </select><br><br>
+        </div>
+        
         <input type="submit" value="Register">
     </form>
+    
+    <a href="{{ url_for('home') }}">Back to Home</a>
 </body>
 </html>
