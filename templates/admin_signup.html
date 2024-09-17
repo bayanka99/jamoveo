@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up</title>
+    <title>Admin Sign Up</title>
     <style>
         .success { color: green; }
         .error { color: red; }
@@ -25,7 +25,7 @@
     </script>
 </head>
 <body>
-    <h1>Sign Up</h1>
+    <h1>Admin Sign Up</h1>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -37,13 +37,11 @@
         {% endif %}
     {% endwith %}
 
-    <form action="{{ url_for('signup') }}" method="post">
+    <form action="{{ url_for('admin_signup') }}" method="post">
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" required><br><br>
-        
         <label for="password">Password:</label>
         <input type="password" id="password" name="password" required><br><br>
-        
         <label for="role">Role:</label>
         <select id="role" name="role" onchange="updateForm()" required>
             <option value="">Select Role</option>
@@ -63,8 +61,7 @@
                 <option value="vocals">Vocals</option>
             </select><br><br>
         </div>
-        
-        <input type="submit" value="Register">
+        <input type="submit" value="Register Admin">
     </form>
     
     <a href="{{ url_for('home') }}">Back to Home</a>
