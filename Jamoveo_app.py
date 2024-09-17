@@ -2,6 +2,8 @@ from flask import Flask, render_template, request, redirect, url_for, flash, get
 import pymysql
 import os
 import uuid
+from flask import jsonify
+
 
 
 app = Flask(__name__)
@@ -70,6 +72,49 @@ def signup():
     return render_template('signup.html')
 
 
+@app.route('/admin_main_page', methods=['GET', 'POST'])
+def admin_main_page():
+    search_result=[]
+    if request.method=="POST":
+        if request.form.get('select_song'):
+            # Handle song selection
+            selected_song_id = request.form.get('song_id')
+            try:
+                connection = get_db_connection()
+                with connection.cursor() as cursor:
+                    sql = "INSERT INTO selected_song (song_id) VALUES (" + selected_song_id + ")"
+                    cursor.execute(sql)
+                    connection.commit()
+                    return redirect(url_for('live_page'))
+            except Exception as e:
+                flash(f"An error occurred: {e}", "error")
+                return render_template('admin_main_page.html', search_results=search_result)
+            finally:
+                connection.close()
+
+        # Handle search
+        song_name=request.form.get('song_name_input')
+        try:
+            connection = get_db_connection()
+            with connection.cursor() as cursor:
+                sql = "SELECT * FROM songs WHERE name LIKE '%"+song_name+"%';"
+                cursor.execute(sql)
+                search_result = cursor.fetchall()
+
+
+            if len(search_result)==0:
+                flash("nothing was found!","error")
+                return redirect(url_for('admin_main_page'))
+
+        except Exception as e:
+            flash(f"An error occurred: {e}", "error")
+        finally:
+            connection.close()
+    return render_template('admin_main_page.html', search_results=search_result)
+
+
+
+
 @app.route('/admin_signup', methods=['GET', 'POST'])
 def admin_signup():
     if request.method == 'POST':
@@ -116,9 +161,66 @@ def admin_signup():
     return render_template('admin_signup.html')
 
 
+@app.route('/check_song_status')
+def check_song_status():
+    try:
+        connection = get_db_connection()
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM selected_song")
+            result = cursor.fetchone()
+            if result:
+                has_song = True
+            else:
+                has_song = False
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        connection.close()
+
+    return jsonify({"has_song": has_song})
+
+
 @app.route('/main_page_player')
 def main_page_player():
-    return render_template('main_page_player.html')
+    while True:
+        try:
+            connection = get_db_connection()
+            with connection.cursor() as cursor:
+                #check if there is a selected song
+                cursor.execute("SELECT * FROM selected_song")
+                result = cursor.fetchone()
+                if result:
+                    return redirect(url_for('live_page'))
+                else:
+                    return render_template('main_page_player.html')
+
+        except Exception as e:
+            flash(f"An error occurred: {e}", "error")
+        finally:
+            connection.close()
+
+
+
+
+
+
+@app.route('/live_page')
+def live_page():
+    song_id = None
+    try:
+        connection = get_db_connection()
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT song_id FROM selected_song")
+            result = cursor.fetchone()
+
+            if result:
+                song_id = result[0]  # Get the song ID
+    except Exception as e:
+        flash(f"An error occurred: {e}", "error")
+    finally:
+        connection.close()
+    return render_template('live_page.html', song_id=song_id)
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -153,7 +255,12 @@ def login():
                     cursor.execute("INSERT INTO active_sessions (session_id, username) VALUES (%s, %s)", (session_id, username))
                     connection.commit()
                     connection.close()
-                return redirect(url_for('main_page_player'))
+
+                    if user[5]==0: #check if not admin
+                        return redirect(url_for('main_page_player'))
+                    else:
+                        return redirect(url_for('admin_main_page'))
+
             else:
                 flash("Invalid username or password. Please try again.", "error")
                 connection.close()
