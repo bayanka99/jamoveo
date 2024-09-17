@@ -69,6 +69,53 @@ def signup():
         return redirect(url_for('signup'))
     return render_template('signup.html')
 
+
+@app.route('/admin_signup', methods=['GET', 'POST'])
+def admin_signup():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        role = request.form.get('role')
+        instrument = request.form.get('instrument') if role == 'instrument_player' else None
+
+        if not username or not password or not role:
+            flash("All fields are required!", "error")
+            return redirect(url_for('admin_signup'))
+
+        if role == 'instrument_player' and not instrument:
+            flash("Instrument is required for instrument players!", "error")
+            return redirect(url_for('admin_signup'))
+
+        try:
+            connection = get_db_connection()
+            with connection.cursor() as cursor:
+                # check if the user already exists
+                cursor.execute("SELECT * FROM Users WHERE username = %s", (username,))
+                if cursor.fetchone():
+                    flash("User already exists!", "error")
+                    return redirect(url_for('admin_signup'))
+
+
+                # check if there is already an admin
+                cursor.execute("SELECT COUNT(*) FROM Users WHERE is_admin = %s", (1,))
+                admin_count = cursor.fetchone()[0]
+
+                if admin_count > 0:
+                    flash("An admin already exists. Only one admin is allowed.", "error")
+                    return redirect(url_for('admin_signup'))
+
+
+                sql = "INSERT INTO Users (username, password, role, instrument, is_admin) VALUES (%s,%s,%s, %s, %s)"
+                cursor.execute(sql, (username, password,role,instrument, 1))
+                connection.commit()
+            connection.close()
+            return redirect(url_for('home'))
+        except Exception as e:
+            flash(f"An error occurred: {e}", "error")
+        return redirect(url_for('admin_signup'))
+    return render_template('admin_signup.html')
+
+
 @app.route('/main_page_player')
 def main_page_player():
     return render_template('main_page_player.html')
