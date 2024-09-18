@@ -156,7 +156,7 @@ def admin_signup():
             connection.close()
             return redirect(url_for('home'))
         except Exception as e:
-            flash(f"An error occurred: {e}", "error")
+            flash(f"An error occurread: {e}", "error")
         return redirect(url_for('admin_signup'))
     return render_template('admin_signup.html')
 
@@ -173,7 +173,7 @@ def check_song_status():
             else:
                 has_song = False
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return ({"error": str(e)}), 500
     finally:
         connection.close()
 
@@ -206,6 +206,25 @@ def main_page_player():
 
 @app.route('/live_page')
 def live_page():
+
+    #this shows quit button only for admin
+    curr_session= session.get('session_id')
+    print(f"and fuck you Current session ID: {curr_session}")  # Debug print
+    query = "SELECT * FROM active_sessions WHERE session_id = %s"
+    connection = get_db_connection()
+    with connection.cursor() as cursor:
+        #check if there is a selected song
+        cursor.execute(query, (curr_session,))
+        user_session = cursor.fetchone()
+        username=user_session[1]
+        query = "SELECT * FROM Users WHERE username = %s"
+        cursor.execute(query, (username,))
+        user = cursor.fetchone()
+
+        if user[5]==0: #check if not admin
+            is_admin=False
+        else:
+            is_admin=True
     song_id = None
     try:
         connection = get_db_connection()
@@ -214,12 +233,27 @@ def live_page():
             result = cursor.fetchone()
 
             if result:
-                song_id = result[0]  # Get the song ID
+                song_id = result[0] #retrieve the song's id
     except Exception as e:
         flash(f"An error occurred: {e}", "error")
     finally:
         connection.close()
-    return render_template('live_page.html', song_id=song_id)
+    return render_template('live_page.html', song_id=song_id,is_admin=is_admin)
+
+
+@app.route('/quit', methods=['POST'])
+def quit():
+    connection = get_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("Delete from selected_song;")
+            connection.commit()
+    except Exception as e:
+        flash(f"An error occurred: {e}", "error")
+    finally:
+        connection.close()
+
+    return redirect(url_for('admin_main_page'))
 
 
 @app.route('/login', methods=['GET', 'POST'])

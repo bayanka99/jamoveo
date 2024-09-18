@@ -40,17 +40,17 @@
     <form action="{{ url_for('signup') }}" method="post">
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" required><br><br>
-        
+
         <label for="password">Password:</label>
         <input type="password" id="password" name="password" required><br><br>
-        
+
         <label for="role">Role:</label>
         <select id="role" name="role" onchange="updateForm()" required>
             <option value="">Select Role</option>
             <option value="instrument_player">Instrument Player</option>
             <option value="singer">Singer</option>
         </select><br><br>
-        
+
         <div id="instrument-field" class="hidden">
             <label for="instrument">Instrument:</label>
             <select id="instrument" name="instrument">
@@ -63,10 +63,10 @@
                 <option value="vocals">Vocals</option>
             </select><br><br>
         </div>
-        
+
         <input type="submit" value="Register">
     </form>
-    
+
     <a href="{{ url_for('home') }}">Back to Home</a>
 </body>
 </html>

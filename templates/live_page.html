@@ -4,6 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Page</title>
+        <script>
+        // function to check if a song is selected
+        function checkSongStatus() {
+            fetch('/check_song_status')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.has_song) {
+                        window.location.href = "/main_page_player";  // redirects to main_page_player
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        // Check the song status every 5 seconds (5000 milliseconds)
+        setInterval(checkSongStatus, 5000);
+    </script>
 </head>
 <body>
     <h1>Live Page</h1>
@@ -19,8 +37,16 @@
     {% endwith %}
 
     <p>Hello, song ID is: {{ song_id }}</p>
-    <form action="{{ url_for('logout') }}" method="get">
-        <button type="submit">Logout</button>
-    </form>
+    <div>
+        <form action="{{ url_for('logout') }}" method="get" style="display: inline;">
+            <button type="submit">Logout</button>
+        </form>
+
+        {% if is_admin %}
+        <form action="{{ url_for('quit') }}" method="post" style="display: inline;">
+            <button type="submit">Quit</button>
+        </form>
+        {% endif %}
+    </div>
 </body>
 </html>
