@@ -124,7 +124,7 @@
     <div class="form-container">
         <form action="{{ url_for('admin_main_page') }}" method="post">
             <label for="song_name">Search Song:</label>
-            <input type="text" id="song_name_input" name="song_name_input" required>
+            <input type="text" id="song_name_input" name="song_name_input_text" required>
             <input type="submit" value="Search">
         </form>
 
@@ -146,7 +146,7 @@
                             <td>
                                 <form action="{{ url_for('admin_main_page') }}" method="post" style="display:inline;">
                                     <input type="hidden" name="song_id" value="{{ song[0] }}">
-                                    <input type="submit" name="select_song" value="Select">
+                                    <input type="submit" name="select_song_button" value="Select">
                                 </form>
                             </td>
                         </tr>
@@ -160,6 +160,6 @@
         <button type="submit">Logout</button>
     </form>
 
-    <a href="{{ url_for('home') }}">Back to Home</a>
+
 </body>
 </html>
