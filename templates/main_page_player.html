@@ -4,14 +4,56 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Waiting</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #222;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #fff;
+        }
+
+        h1 {
+            text-align: center;
+            color: #00bfff;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #00bfff;
+            color: black;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #007bff;
+        }
+
+        .message {
+            margin-top: 20px;
+            font-size: 18px;
+            text-align: center;
+            color: #fff;
+        }
+    </style>
     <script>
-        // Function to check if a song is selected
+        // function to check if a song is selected
         function checkSongStatus() {
-            fetch('/check_song_status')  // This URL should match your Flask route
+            fetch('/check_song_status')
                 .then(response => response.json())
                 .then(data => {
                     if (data.has_song) {
-                        window.location.href = "/live_page";  // Redirect to live_page
+                        window.location.href = "/live_page";  // redirects to live_page
                     }
                 })
                 .catch(error => {
@@ -25,7 +67,8 @@
 </head>
 <body>
     <h1>Waiting for Next Song</h1>
-    <form action="{{ url_for('logout') }}" method="get">
+    <div class="message">You will be redirected to the live page once a song is selected.</div>
+    <form action="{{ url_for('logout') }}" method="get" style="margin-top: 30px;">
         <button type="submit">Logout</button>
     </form>
 </body>
