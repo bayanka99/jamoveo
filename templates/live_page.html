@@ -22,6 +22,11 @@
         // Check the song status every 5 seconds (5000 milliseconds)
         setInterval(checkSongStatus, 5000);
     </script>
+    <style>
+    .chords {
+        color: blue;
+    }
+</style>
 </head>
 <body>
     <h1>Live Page</h1>
@@ -36,11 +41,40 @@
         {% endif %}
     {% endwith %}
 
-    <p>Hello, song ID is: {{ song_id }}</p>
+    <p>Author: {{ author_name }}</p>
+    <p>song: {{ song_name }}</p>
+<div>
+    {% if lyrics_data %}
+        <h2>Lyrics:</h2>
+        <div>
+            {% for verse in lyrics_data %}
+                <p style="direction: {{ 'rtl' if language == 'hebrew' else 'ltr' }};">
+                    {% for line in verse %}
+                        {% if user_role == 'singer' %}
+                            {{ line.lyrics }}
+                        {% else %}
+                            {% if line.chords %}
+                                <span class="chords">[{{ line.chords }}]</span>
+                            {% endif %}
+                            {{ line.lyrics }}
+                        {% endif %}
+                    {% endfor %}
+                </p>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No lyrics available.</p>
+    {% endif %}
+</div>
+
+
+
     <div>
+        {% if not is_admin %}
         <form action="{{ url_for('logout') }}" method="get" style="display: inline;">
             <button type="submit">Logout</button>
         </form>
+           {% endif %}
 
         {% if is_admin %}
         <form action="{{ url_for('quit') }}" method="post" style="display: inline;">

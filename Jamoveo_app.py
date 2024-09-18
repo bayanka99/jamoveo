@@ -3,7 +3,7 @@ import pymysql
 import os
 import uuid
 from flask import jsonify
-
+import json
 
 
 app = Flask(__name__)
@@ -206,6 +206,10 @@ def main_page_player():
 
 @app.route('/live_page')
 def live_page():
+    author_name = ""
+    song_name = ""
+    lyrics=""
+    language=""
 
     #this shows quit button only for admin
     curr_session= session.get('session_id')
@@ -234,11 +238,25 @@ def live_page():
 
             if result:
                 song_id = result[0] #retrieve the song's id
+                sql_query = "select * from songs where id = %s"
+                cursor.execute(sql_query,(song_id,))
+                song = cursor.fetchone()
+                author_name=song[2]
+                song_name=song[1]
+                lyrics=song[3]
+                language=song[4]
+                role=user[3]
+                lyrics_data = json.loads(lyrics)
+
     except Exception as e:
         flash(f"An error occurred: {e}", "error")
     finally:
         connection.close()
-    return render_template('live_page.html', song_id=song_id,is_admin=is_admin)
+
+
+
+
+    return render_template('live_page.html', author_name=author_name,song_name=song_name,is_admin=is_admin,lyrics_data=lyrics_data,language=language,user_role=role)
 
 
 @app.route('/quit', methods=['POST'])
