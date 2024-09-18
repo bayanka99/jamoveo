@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Page</title>
-        <script>
+    <script>
         // function to check if a song is selected
         function checkSongStatus() {
             fetch('/check_song_status')
@@ -21,7 +21,58 @@
 
         // Check the song status every 5 seconds (5000 milliseconds)
         setInterval(checkSongStatus, 5000);
+
+        // Scrolling functionality
+        let scrolling = false;
+        let scrollInterval;
+
+        function startScrolling() {
+            scrolling = true;
+            document.getElementById("toggleScroll").innerText = "Stop Scrolling";
+
+            scrollInterval = setInterval(() => {
+                window.scrollBy(0, 2); // Scroll down by 1 pixel
+            }, 200); // Adjust speed here (100ms)
+        }
+
+        function stopScrolling() {
+            scrolling = false;
+            document.getElementById("toggleScroll").innerText = "Start Scrolling";
+            clearInterval(scrollInterval);
+        }
+
+        function toggleScroll() {
+            if (scrolling) {
+                stopScrolling();
+            } else {
+                startScrolling();
+            }
+        }
     </script>
+    <style>
+        .chords {
+            color: blue;
+            font-size: 1.8em;
+        }
+        .lyrics {
+            font-size: 1.8em;
+        }
+        #toggleScroll {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #toggleScroll:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
     <h1>Live Page</h1>
@@ -36,11 +87,39 @@
         {% endif %}
     {% endwith %}
 
-    <p>Hello, song ID is: {{ song_id }}</p>
+    <p>Author: {{ author_name }}</p>
+    <p>song: {{ song_name }}</p>
     <div>
+        {% if lyrics_data %}
+            <h2>Lyrics:</h2>
+            <div>
+                {% for verse in lyrics_data %}
+                    <p style="direction: {{ 'rtl' if language == 'hebrew' else 'ltr' }};">
+                        {% for line in verse %}
+                            {% if user_role == 'singer' %}
+                                <span class="lyrics">{{ line.lyrics }}</span>
+                            {% else %}
+                                {% if line.chords %}
+                                    <span class="chords">[{{ line.chords }}]</span>
+                                {% endif %}
+                                <span class="lyrics">{{ line.lyrics }}</span>
+                            {% endif %}
+                        {% endfor %}
+                        <br><br>
+                    </p>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No lyrics available.</p>
+        {% endif %}
+    </div>
+
+    <div>
+        {% if not is_admin %}
         <form action="{{ url_for('logout') }}" method="get" style="display: inline;">
             <button type="submit">Logout</button>
         </form>
+        {% endif %}
 
         {% if is_admin %}
         <form action="{{ url_for('quit') }}" method="post" style="display: inline;">
@@ -48,5 +127,7 @@
         </form>
         {% endif %}
     </div>
+
+    <button id="toggleScroll" onclick="toggleScroll()">Start Scrolling</button>
 </body>
 </html>
