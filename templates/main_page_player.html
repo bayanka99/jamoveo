@@ -4,6 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Waiting</title>
+    <script>
+        // Function to check if a song is selected
+        function checkSongStatus() {
+            fetch('/check_song_status')  // This URL should match your Flask route
+                .then(response => response.json())
+                .then(data => {
+                    if (data.has_song) {
+                        window.location.href = "/live_page";  // Redirect to live_page
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        // Check the song status every 5 seconds (5000 milliseconds)
+        setInterval(checkSongStatus, 5000);
+    </script>
 </head>
 <body>
     <h1>Waiting for Next Song</h1>
