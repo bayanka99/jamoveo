@@ -10,6 +10,8 @@ app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
 
+##------------------------------------------------------------------------------
+##connection to the database
 DB_HOST = os.getenv('DB_HOST', 'bayanka.mysql.pythonanywhere-services.com')
 DB_USER = os.getenv('DB_USER', 'bayanka')
 DB_PASS = os.getenv('DB_PASS', 'adminadmin')
@@ -23,6 +25,7 @@ def get_db_connection():
         database=DB_NAME
     )
     return connection
+##------------------------------------------------------------------------------
 
 
 @app.route('/')
@@ -32,19 +35,14 @@ def home():
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        role = request.form.get('role')
-        instrument = request.form.get('instrument') if role == 'instrument_player' else None
-
-        if not username or not password or not role:
-            flash("All fields are required!", "error")
-            return redirect(url_for('signup'))
+        username = request.form.get('username_textbox')
+        password = request.form.get('password_textbox')
+        role = request.form.get('selected_role')
+        instrument = request.form.get('selected_instrument') if role == 'instrument_player' else None
 
         if role == 'instrument_player' and not instrument:
             flash("Instrument is required for instrument players!", "error")
             return redirect(url_for('signup'))
-
 
         try:
             connection = get_db_connection()
@@ -55,20 +53,16 @@ def signup():
 
             if existing_user:
                 flash("Username already exists. Please choose a different username.", "error")
-                return redirect(url_for('signup'))
-
-            with connection.cursor() as cursor:
-                sql = """
-                INSERT INTO Users (username, password, role, instrument)
-                VALUES (%s, %s, %s, %s)
-                """
-                cursor.execute(sql, (username, password, role,instrument))
-                connection.commit()
-            connection.close()
-            flash(f"User {username} registered successfully!", "success")
+            else:
+                with connection.cursor() as cursor:
+                    sql = "INSERT INTO Users (username, password, role, instrument) VALUES (%s, %s, %s, %s)"
+                    cursor.execute(sql, (username, password, role,instrument))
+                    connection.commit()
+                    flash(f"User {username} registered successfully!", "success")
         except Exception as e:
             flash(f"An error occurred: {e}", "error")
-        return redirect(url_for('signup'))
+        finally:
+            connection.close()
     return render_template('signup.html')
 
 
@@ -76,7 +70,7 @@ def signup():
 def admin_main_page():
     search_result=[]
     if request.method=="POST":
-        if request.form.get('select_song'):
+        if request.form.get('select_song_button'): ##checks if the select button was clicked
             # Handle song selection
             selected_song_id = request.form.get('song_id')
             try:
@@ -93,7 +87,7 @@ def admin_main_page():
                 connection.close()
 
         # Handle search
-        song_name=request.form.get('song_name_input')
+        song_name=request.form.get('song_name_input_text')
         try:
             connection = get_db_connection()
             with connection.cursor() as cursor:
@@ -104,7 +98,6 @@ def admin_main_page():
 
             if len(search_result)==0:
                 flash("nothing was found!","error")
-                return redirect(url_for('admin_main_page'))
 
         except Exception as e:
             flash(f"An error occurred: {e}", "error")
@@ -118,10 +111,10 @@ def admin_main_page():
 @app.route('/admin_signup', methods=['GET', 'POST'])
 def admin_signup():
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        role = request.form.get('role')
-        instrument = request.form.get('instrument') if role == 'instrument_player' else None
+        username = request.form.get('username_text')
+        password = request.form.get('password_text')
+        role = request.form.get('selected_role')
+        instrument = request.form.get('selected_instrument') if role == 'instrument_player' else None
 
         if not username or not password or not role:
             flash("All fields are required!", "error")
@@ -147,17 +140,15 @@ def admin_signup():
 
                 if admin_count > 0:
                     flash("An admin already exists. Only one admin is allowed.", "error")
-                    return redirect(url_for('admin_signup'))
-
-
-                sql = "INSERT INTO Users (username, password, role, instrument, is_admin) VALUES (%s,%s,%s, %s, %s)"
-                cursor.execute(sql, (username, password,role,instrument, 1))
-                connection.commit()
-            connection.close()
+                else:
+                    sql = "INSERT INTO Users (username, password, role, instrument, is_admin) VALUES (%s,%s,%s, %s, %s)"
+                    cursor.execute(sql, (username, password,role,instrument, 1))
+                    connection.commit()
             return redirect(url_for('home'))
         except Exception as e:
             flash(f"An error occurread: {e}", "error")
-        return redirect(url_for('admin_signup'))
+        finally:
+            connection.close()
     return render_template('admin_signup.html')
 
 
@@ -182,7 +173,6 @@ def check_song_status():
 
 @app.route('/main_page_player')
 def main_page_player():
-    while True:
         try:
             connection = get_db_connection()
             with connection.cursor() as cursor:
@@ -251,9 +241,6 @@ def live_page():
         flash(f"An error occurred: {e}", "error")
     finally:
         connection.close()
-
-
-
 
     return render_template('live_page.html', author_name=author_name,song_name=song_name,is_admin=is_admin,lyrics_data=lyrics_data,language=language,user_role=role)
 
