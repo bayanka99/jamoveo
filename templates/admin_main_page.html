@@ -5,18 +5,106 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Main Page</title>
     <style>
-        .success { color: green; }
-        .error { color: red; }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #222;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #00bfff;
+            margin-bottom: 20px;
+        }
+
+        .success {
+            color: #00bfff;
+            margin-bottom: 10px;
+        }
+
+        .error {
+            color: red;
+            margin-bottom: 10px;
+        }
+
+        .form-container {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        select {
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #444;
+            color: #fff;
+        }
+
+        input[type="submit"],
+        button {
+            background-color: #00bfff;
+            color: black;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="submit"]:hover,
+        button:hover {
+            background-color: #007bff;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 20px;
         }
+
         th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
+            border: 1px solid #555;
+            padding: 12px;
+            text-align: left;
         }
+
         th {
-            background-color: #f4f4f4;
+            background-color: #333;
+            font-weight: bold;
+        }
+
+        tbody tr:hover {
+            background-color: #444;
+        }
+
+        a {
+            margin-top: 20px;
+            text-decoration: none;
+            color: #00bfff;
+        }
+
+        a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -33,40 +121,45 @@
         {% endif %}
     {% endwith %}
 
-    <form action="{{ url_for('admin_main_page') }}" method="post">
-        <label for="song_name">Search Song:</label>
-        <input type="text" id="song_name_input" name="song_name_input" required>
-        <input type="submit" value="Search">
-    </form>
+    <div class="form-container">
+        <form action="{{ url_for('admin_main_page') }}" method="post">
+            <label for="song_name">Search Song:</label>
+            <input type="text" id="song_name_input" name="song_name_input" required>
+            <input type="submit" value="Search">
+        </form>
 
-    {% if search_results %}
-        <h2>Search Results:</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Author</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for song in search_results %}
+        {% if search_results %}
+            <h2>Search Results:</h2>
+            <table>
+                <thead>
                     <tr>
-                        <td>{{ song[1] }}</td>
-                        <td>{{ song[2] }}</td>
-                        <td>
-                            <form action="{{ url_for('admin_main_page') }}" method="post" style="display:inline;">
-                                <input type="hidden" name="song_id" value="{{ song[0] }}">
-                                <input type="submit" name="select_song" value="Select">
-                            </form>
-                        </td>
+                        <th>Name</th>
+                        <th>Author</th>
+                        <th>Action</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% endif %}
+                </thead>
+                <tbody>
+                    {% for song in search_results %}
+                        <tr>
+                            <td>{{ song[1] }}</td>
+                            <td>{{ song[2] }}</td>
+                            <td>
+                                <form action="{{ url_for('admin_main_page') }}" method="post" style="display:inline;">
+                                    <input type="hidden" name="song_id" value="{{ song[0] }}">
+                                    <input type="submit" name="select_song" value="Select">
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
 
     <form action="{{ url_for('logout') }}" method="get">
         <button type="submit">Logout</button>
+    </form>
+
+    <a href="{{ url_for('home') }}">Back to Home</a>
 </body>
 </html>

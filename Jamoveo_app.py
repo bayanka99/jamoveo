@@ -213,7 +213,6 @@ def live_page():
 
     #this shows quit button only for admin
     curr_session= session.get('session_id')
-    print(f"and fuck you Current session ID: {curr_session}")  # Debug print
     query = "SELECT * FROM active_sessions WHERE session_id = %s"
     connection = get_db_connection()
     with connection.cursor() as cursor:
@@ -299,7 +298,7 @@ def login():
             with connection.cursor() as cursor:
                 sql = "SELECT * FROM Users WHERE username = %s AND password = %s"
                 cursor.execute(sql, (username, password))
-                user = cursor.fetchone()  # Fetch the first matching user
+                user = cursor.fetchone()  # fetches the first matching user
             if user:
                 session_id = str(uuid.uuid4()) # generate a new session ID
                 session['session_id'] = session_id
